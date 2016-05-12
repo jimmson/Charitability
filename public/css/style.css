@@ -1,0 +1,17 @@
+/*
+ * Base structure
+ */
+
+.entity-details {
+
+}
+
+.entity-details>img {
+	max-height : 50px;
+	float : right;
+}
+
+.entity-details>span {
+    float: left;
+    line-height: 50px;
+}
