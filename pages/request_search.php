@@ -1,18 +1,20 @@
 <?php
 
- use bones\base\page;
- use bones\containers\div;
- use bones\containers\form;
- use bones\containers\table;
- use bones\controls\option;
- use bones\controls\span;
- use bones\controls\button;
- use bones\controls\h;
- use bones\controls\img;
- //use controls\sa as a;
+use bones\base\page;
+use bones\containers\div;
+use bones\containers\form;
+use bones\containers\table;
+use bones\controls\option;
+use bones\controls\span;
+use bones\containers\button;
+use bones\controls\h;
+use bones\controls\img;
+//use controls\sa as a;
 
- use bootstrap\controls\binput;
- use bootstrap\containers\bselect;
+use bootstrap\containers\bselect;
+use bootstrap\containers\bpanel;
+use bootstrap\controls\binput;
+use bootstrap\layouts\grid;
 
 class request_search extends dashboard
 {
@@ -37,19 +39,22 @@ class request_search extends dashboard
     {
         parent::define();
 
-        $this->filters          = new div();
-        $this->title            = new div();
+        $this->layout           = new grid();
         $this->form             = new form("", form::POST);
-        $this->results          = new table();
-
-        $this->headding         = new h("");
+        $this->filters          = new bpanel("Search for a request");
+        $this->name             = new binput("organisation_name");
         $this->search           = new button("search_button");
+        $this->results          = new bpanel("Search results...");
+        $this->table            = new table();
         $this->table_img        = new img();
         $this->table_link       = new sa();
         $this->table_req_type   = new span();
         $this->table_req_qty    = new span();
         $this->table_qty_type   = new span();
 
+        $this                   ->set_layout( $this->layout );
+        $this->layout           ->add_row( grid::FULL_WIDTH );
+        $this->layout           ->add_row( grid::FULL_WIDTH );
 
         $this->types            = new bselect("type");
         $types                  = new option();
@@ -69,7 +74,7 @@ class request_search extends dashboard
         $organisations          ->set_data_properties("set_value","set_text");
         $this->organisations     ->set_data( ssOrganisation::get_organisation_data() );
 
-        $this->table_img        ->set_data_items("organisation_logo_path");
+        $this->table_img        ->set_data_items("file_location");
         $this->table_img        ->set_data_properties("set_src");
 
         $this->table_req_type   ->set_data_items("req_type_label");
@@ -84,11 +89,10 @@ class request_search extends dashboard
         $this->table_link       ->set_data_items("request_id", "request_reference");
         $this->table_link       ->set_data_properties("set_arg", "set_text");
 
-        $this->filters          ->set_class("col-md-12", "form-horizontal");
-        $this->results          ->set_class("col-md-12", "table", "table-striped"); 
+        $this->filters          ->set_class("mt-20"); 
+        $this->table            ->set_class("col-md-12", "table", "table-striped"); 
         $this->table_img        ->set_class("table-image"); 
-        $this->title            ->set_class("page-header");
-        $this->search           ->set_class("btn", "btn-lg", "btn-primary");
+        $this->search           ->set_class("btn", "btn-primary");
         $this->types            ->set_class("form-control"); 
         $this->organisations    ->set_class("form-control"); 
 
@@ -104,17 +108,19 @@ class request_search extends dashboard
         $this->table_link       ->set_mode("view_request");
 
         $this->search           ->set_text("Search");
-        $this->headding         ->set_text("Search for an request");
         $organisation_default   ->set_text("Self");
         $types_default          ->set_text("Select a Request type");
 
         $this->types            ->add( $types_default, $types );
         $this->organisations    ->add( $organisation_default, $organisations);
-        $this->title            ->add( $this->headding, $this->search );
-        $this->filters          ->add( $this->organisations, $this->types );
-        $this->results          ->add( $this->table_img, $this->table_link, $this->table_req_type, $this->table_qty_type, $this->table_req_qty);
-        $this->form             ->add( $this->title, $this->filters, $this->results );
-        $this                   ->add( $this->form );
+        $this->filters->body    ->add( $this->organisations, $this->types );
+        $this->filters->footer  ->add( $this->search );
+        $this->table            ->add( $this->table_img, $this->table_link, $this->table_req_type, 
+                                       $this->table_qty_type, $this->table_req_qty);
+        $this->results->body    ->add( $this->table);
+        $this->form             ->add( $this->filters );
+        $this                   ->add( $this->form, $this->results );
+
     }
 
     private function get_requests ( )
@@ -127,13 +133,14 @@ class request_search extends dashboard
             "request_id", 
             "request_reference", 
             "request_quantity", 
-            "organisation_logo_path", 
-            "organisation_name"
+            "organisation_name",
+            "file_location"
         );
 
-        QUERY::QJOIN("ssm_organisation", QUERY::condition("sst_request.organisation_id", "=", "ssm_organisation.organisation_id"));
-        QUERY::QJOIN("ssc_type",         QUERY::condition("sst_request.request_type",    "=", "req_type.type_code"), "req_type");
-        QUERY::QJOIN("ssc_type",         QUERY::condition("sst_request.quantity_type",   "=", "qty_type.type_code"), "qty_type");
+        QUERY::QJOIN("ssm_organisation", QUERY::condition("sst_request.organisation_id",    "=", "ssm_organisation.organisation_id"));
+        QUERY::QJOIN("ssm_file",         QUERY::condition("ssm_organisation.logo_file_id",  "=", "ssm_file.file_id"));
+        QUERY::QJOIN("ssc_type",         QUERY::condition("sst_request.request_type",       "=", "req_type.type_code"), "req_type");
+        QUERY::QJOIN("ssc_type",         QUERY::condition("sst_request.quantity_type",      "=", "qty_type.type_code"), "qty_type");
 /*
         if ( isset($_POST["request_name"]) && $_POST["request_name"] != "")
         {
@@ -145,7 +152,7 @@ class request_search extends dashboard
     }
     public function search_request()
     {
-        $this->results->set_data( $this->get_requests() );
+        $this->table->set_data( $this->get_requests() );
     }
 
 

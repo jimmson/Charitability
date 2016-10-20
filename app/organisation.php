@@ -5,7 +5,10 @@ class ssOrganisation extends ssDataAccess
 	protected $id;
     protected $name;
 	protected $website;
-	protected $logo;
+	protected $address_id;
+	protected $contact_id;
+	protected $logo_id;
+	public $logo;
 
 	public $address;
 	public $contact;
@@ -51,16 +54,6 @@ class ssOrganisation extends ssDataAccess
 	    return $this->website;    
 	}
 
-	public function set_logo( $_logo )
-	{
-	   $this->set_property( "logo", $_logo );
-	}
-
-	public function get_logo()
-	{
-	    return $this->logo;    
-	}
-
     /*
     	Public Methods
 	*/
@@ -77,44 +70,64 @@ class ssOrganisation extends ssDataAccess
 
 	public function save()
 	{
-        QUERY::QTABLE("ssm_organisation");
+		try 
+        {
+			DB::begin_transaction();
 
-        QUERY::QCOLUMNS(
-        	"organisation_name", 
-        	"organisation_website",
-        	"organisation_logo_path"
-        );
+			$this->address 	->save();
+			$this->contact 	->save();
+			$this->logo->save();
 
-        QUERY::QVALUES (
-        	QUERY::quote($this->get_name()), 
-        	QUERY::quote($this->get_website()),
-        	QUERY::quote($this->get_logo())
-        );
+	        QUERY::QTABLE("ssm_organisation");
 
-        /*TODO: error handling */
+	        QUERY::QCOLUMNS(
+	        	"organisation_name", 
+	        	"organisation_website"
+	        );
 
-		switch ( $this->datastate ) 
+	        QUERY::QVALUES (
+	        	QUERY::quote($this->get_name()), 
+	        	QUERY::quote($this->get_website())
+	        );
+
+	        /*TODO: error handling */
+
+			switch ( $this->datastate ) 
+			{
+			    case self::DATASTATE_NEW:
+
+			     	QUERY::QCOLUMNS(
+			     		"address_id",
+			     		"contact_id",
+			     		"logi_file_id"
+ 			     	);
+
+			        QUERY::QVALUES (
+			        	$this->address->get_id(),
+			        	$this->contact->get_id(),
+			        	$this->logo->get_id()
+			        );
+
+    				DB::query(
+						QUERY::QINSERT()
+					);
+								
+					$this->set_id(DB::inserted_id());
+
+		        break;
+			    case self::DATASTATE_MODIFIED:
+		            QUERY::QWHERE(QUERY::condition("organisation_id", "=", $this->get_id()));
+			           DB::query( QUERY::QUPDATE() );
+		        break;
+			}
+	    }
+		catch (Exception $e)
 		{
-		    case self::DATASTATE_NEW:
-
-		    	$new_id = DB::query( QUERY::QINSERT());
-
-		        $this->address->set_owning_id( $new_id);
-		        $this->address->set_owning_table( "ssm_organisation");		        
-		        $this->contact->set_owning_id( $new_id);
-		        $this->contact->set_owning_table( "ssm_organisation");
-
-		        //$this->focus($new_id);
-
-	        break;
-		    case self::DATASTATE_MODIFIED:
-	            QUERY::QWHERE(QUERY::condition("organisation_id", "=", $this->get_id()));
-		           DB::query( QUERY::QUPDATE() );
-	        break;
+			echo $e->getMessage();
+       		DB::rollback();
 		}
 
-		$this->address->save();
-        $this->contact->save();
+        DB::commit();
 	}
 
     /*
@@ -125,26 +138,32 @@ class ssOrganisation extends ssDataAccess
 
 		/*TODO: error handling */
 
-		$this->id 		 = $_organisation_data["organisation_id"];
-		$this->name 	 = $_organisation_data["organisation_name"];
-		$this->website 	 = $_organisation_data["organisation_website"];
-		$this->logo 	 = $_organisation_data["organisation_logo_path"];
-		$this->datastate = self::DATASTATE_CURRENT;
+		$this->id 		  = $_organisation_data["organisation_id"];
+		$this->name 	  = $_organisation_data["organisation_name"];
+		$this->website 	  = $_organisation_data["organisation_website"];
+		$this->address_id = $_organisation_data["address_id"];
+		$this->contact_id = $_organisation_data["contact_id"];
+		$this->logo_id 	  = $_organisation_data["logo_file_id"];
+		$this->datastate  = self::DATASTATE_CURRENT;
 
-		$this->address->focus( "ssm_organisation", $this->get_id() );	
-		$this->contact->focus( "ssm_organisation", $this->get_id() );	
+		$this->address 	->focus($this->address_id);	
+		$this->contact 	->focus($this->contact_id);	
+		$this->logo->focus($this->logo_id);
 	}
 
 	private function reset_properties()
 	{
-		$this->id 		 = 0;
-		$this->name 	 = "";
-		$this->website 	 = "";
-		$this->logo 	 = "";
-		$this->datastate = self::DATASTATE_NEW;
+		$this->id 		  = 0;
+		$this->name 	  = "";
+		$this->website 	  = "";
+		$this->address_id = 0;
+		$this->contact_id = 0;
+		$this->logo_id = 0;
+		$this->datastate  = self::DATASTATE_NEW;
 
-		$this->address 	 = new ssAddress();
-		$this->contact 	 = new ssContact();
+		$this->address 	  = new ssAddress();
+		$this->contact 	  = new ssContact();
+		$this->logo  = new ssFile();
 
 	}
 

@@ -7,12 +7,13 @@
  
  class bselect extends select
  {
-    const INLINE = 1;
+    const INLINE = 0;
+    const GROUP  = 1;
 
     private $label_control;
     private $form_layout;
 
-    public function __construct( $_name, $_form_layout = 1)
+    public function __construct( $_name, $_form_layout = self::GROUP )
     {
         parent::__construct( $_name );
         
@@ -20,6 +21,7 @@
         $this->set_renderer("b_render_control");
 
         $this->form_layout = $_form_layout;
+
     }
 
     public function set_label( $_text )
@@ -39,33 +41,34 @@
 
         $div_group = new div("");
 
-        if ( !$this->get_id() )
-        {   
-            $this->set_id( $this->get_name() );
-            $this->label_control->set_for( $this->get_id() );
+        $div_group->set_class("form-group"); 
+
+        if ($this->label_control)
+        {
+            if ( !$this->get_id() )
+            {   
+                $this->set_id( $this->get_name() );
+                $this->label_control->set_for( $this->get_id() );
+            }
+
+            $this->label_control ->set_class("control-label");
+            $div_group->add( $this->label_control);
         }
-
-        $div_group           ->set_class("form-group"); 
-        $this->label_control ->set_class("control-label");
-
-        $div_group->add( $this->label_control);
 
         if ($this->form_layout == self::INLINE)
         {
+            if ( $this->label_control ) $this->label_control ->set_class("col-sm-4 ");
+
             $div_wrap            = new div("");
             $div_wrap            ->set_class("col-sm-8"); 
-            $this->label_control ->set_class("col-sm-4 ");
             $div_wrap ->add( $this);
             $div_group->add( $div_wrap );
         }
         else
         {
-            $div_group->set_class("col-sm-12"); 
             $div_group->add( $this );
         }
-
         $div_group->render();
-
     }
  }
 

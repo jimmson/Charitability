@@ -10,7 +10,8 @@
 class register extends page
 {
 	//containers
-	private $form;
+    private $form;
+	private $user;
 
 	//controls
     private $name;
@@ -24,17 +25,19 @@ class register extends page
 	public function __construct()
 	{
 		parent::__construct( "Register" );
+
+        $this->requires_session = false;
     }
 
     public function define()
     {     
-        $this->requires_session = false;
+        $this->user = new ssUser();
 
         $this->add_stylesheet( "http://getbootstrap.com/dist/css/bootstrap.min.css" );
         $this->add_stylesheet( "https://getbootstrap.com/examples/signin/signin.css" );
         $this->add_meta( "viewport", "width=device-width, initial-scale=1" );
 
-        $this->headding    = new h();
+        $this->headding    = new h("");
     	$this->submit 	   = new button("submit_button");
     	$this->form 	   = new form("", form::POST, "/register/register");
         $this->name        = new input("name");
@@ -71,9 +74,12 @@ class register extends page
 
     public function register()
     {
+        $this->user->set_name($_POST["name"]);
+        $this->user->set_surname($_POST["surname"]);
+        $this->user->set_password($_POST["password"]);
 
- 
+        $this->user->contact->set_email($_POST["email"]);
+
+        $this->user->save();
     }
-
-
 }

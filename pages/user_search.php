@@ -5,7 +5,7 @@
  use bones\containers\form;
  use bones\containers\table;
  use bones\controls\input;
- use bones\controls\button;
+ use bones\containers\button;
  use bones\controls\h;
  use bones\controls\span;
  use bones\controls\img;

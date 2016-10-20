@@ -5,8 +5,10 @@
  use bones\containers\div;
  use bones\containers\ul;
  use bones\containers\li;
+ use bones\containers\button;
  use bones\containers\a;
  use bones\controls\p;
+ use bones\controls\i;
  use bones\controls\img;
  use bones\controls\span;
 
@@ -23,46 +25,87 @@ class dashboard extends page
     public function define()
     {
         $this->app_area = new div();
+        $this->wrapper = new div();
 
-        $this->app_area->set_class("col-sm-9", "col-sm-offset-3", "col-md-10", "col-md-offset-2", "main", "app-area");
+        $this->app_area ->set_id("page-wrapper");
+        $this->wrapper  ->set_id("wrapper");
 
-        $this->add_stylesheet( "http://getbootstrap.com/dist/css/bootstrap.min.css" );
-        $this->add_stylesheet( "/public/css/dashboard.css" );
+        $this->add_stylesheet( "/public/bootstrap/dist/css/bootstrap.min.css" );
+        $this->add_stylesheet( "/public/metisMenu/dist/metisMenu.min.css" );
+        $this->add_stylesheet( "/public/css/sb-admin-2.css" );
+        $this->add_stylesheet( "/public/font-awesome/css/font-awesome.min.css" );
+        $this->add_stylesheet( "/public/fileinput/css/fileinput.min.css" );
         $this->add_stylesheet( "/public/css/style.css" );
-        $this->add_meta( "viewport", "width=device-width, initial-scale=1" );
-        $this->add_script( "http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js" );
-        $this->add_script( "http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js" );
+        $this->add_stylesheet( "/public/css/dashboard.css" );
 
-        parent::add( $this->get_nav_container() );
-        parent::add( $this->get_menu_container() );
-        parent::add( $this->app_area );
-    }
+        $this->add_meta( "viewport", "width=device-width, initial-scale=1" );
+
+        $this->add_script( "/public/jquery/dist/jquery.min.js" );
+        $this->add_script( "/public/bootstrap/dist/js/bootstrap.min.js" );
+        $this->add_script( "/public/fileinput/js/fileinput.min.js" );
+        $this->add_script( "/public/metisMenu/dist/metisMenu.min.js" );
+        $this->add_script( "/public/js/sb-admin-2.js" );
+
+        $this->wrapper->add( 
+            $this->get_nav_container(),
+            $this->app_area 
+        );
+
+        parent::add($this->wrapper);
+    }        
 
     public function add( ...$_control )
     {
         $this->app_area->add( ...$_control );
     } 
 
+    public function set_layout( $_layout )
+    {
+         $this->app_area->set_layout( $_layout );
+    } 
+
     private function get_nav_container()
     {
-        $nav         = new nav();
-        $nav_header  = new div();
-        $nav_menu    = new ul();
+        $nav  = new nav();
 
-        $nav         ->set_class("navbar", "navbar-inverse", "navbar-fixed-top");
-        $nav_menu    ->set_class("nav", "navbar-nav", "navbar-right");
-        $nav_header  ->set_class("navbar-header");
+        $nav ->set_class("navbar", "navbar-default", "navbar-static-top");
+        $nav ->set_custom_attribute("role", "navigation");
 
-        $nav_menu    ->add($this->get_profile_item());
-        $nav_header  ->add($this->get_header());
-        $nav         ->add($nav_header, $nav_menu);
+        $nav ->set_style("margin-bottom", "0px");
 
-    	return $nav;
+        $nav->add(
+            $this->get_header(), 
+            $this->get_header_links(),
+            $this->get_menu_container()
+        );
+
+        return $nav;
     }
 
     private function get_header()
     {
-        $header       = new a(); 
+
+        $nav_header   = new div();
+        $brand        = new a(); 
+        $nav_togle    = new button("", button::BUTTON);
+        $icon_bar     = new span();
+
+        $nav_header   ->set_class("navbar-header");
+        $brand        ->set_class("navbar-brand");
+        $nav_togle    ->set_class("navbar-toggle"); 
+        $icon_bar     ->set_class("icon-bar");
+
+        $nav_togle    ->set_custom_attribute("data-toggle", "collapse");
+        $nav_togle    ->set_custom_attribute("data-target", ".navbar-collapse");
+
+        $brand        ->set_text(ssSession::$organisation->get_name());
+
+        $nav_togle    ->add($icon_bar, $icon_bar, $icon_bar);  
+        $nav_header   ->add($nav_togle, $brand);
+
+        return $nav_header;
+
+       /* $header       = new a(); 
         $logo         = new img();
         $organisation = new span();
 
@@ -82,16 +125,21 @@ class dashboard extends page
 
         $header->add($logo, $organisation);
 
-        return $header;
+        return $header;*/
 
     }
 
-    private function get_profile_item()
+    private function get_header_links()
     {
         $user_fullname = ssSession::$user->get_name() . " " . ssSession::$user->get_surname();
 
-        $user       = new li();
-        $dropdown   = new ul();
+        // Menu controls  
+        $top_links      = new ul();
+        $user_item      = new li();
+        $user_dropdown  = new ul();
+        $user_toggle    = new a();
+
+        // User Dropdown controls
         $header     = new li(); 
         $footer     = new li(); 
         $left       = new div(); 
@@ -99,59 +147,68 @@ class dashboard extends page
         $profile    = new a();
         $logout     = new a();
         $info       = new p();
-        $link       = new a();
         $spicture   = new img();
         $lpicture   = new img();
         $name       = new span();
-         
-        $user       ->set_class("dropdown", "user", "user-menu");
-        $dropdown   ->set_class("dropdown-menu");
-        $link       ->set_class("dropdown-toggle");
-        $header     ->set_class("user-header");
-        $footer     ->set_class("user-footer");
-        $spicture   ->set_class("user-image");
-        $lpicture   ->set_class("img-circle");
-        $left       ->set_class("pull-left");
-        $right      ->set_class("pull-right");
-        $profile    ->set_class("btn", "btn-default", "btn-primary");
-        $logout     ->set_class("btn", "btn-default", "btn-primary");
-        
-        $info       ->set_text($user_fullname);
-        $logout     ->set_text("Logout");
-        $profile    ->set_text("Profile");
-        $name       ->set_text($user_fullname);
 
-        $logout     ->set_href("/login/logout");
-        $profile    ->set_href("/user/view_user/" . ssSession::$user->get_id());
+        $top_links      ->set_class("nav", "navbar-top-links", "navbar-right");
+        $user_item      ->set_class("dropdown");
+        $user_toggle    ->set_class("dropdown-toggle");
+        $user_dropdown  ->set_class("dropdown-menu", "dropdown-user");
+        $header         ->set_class("user-header");
+        $footer         ->set_class("user-footer");
+        $spicture       ->set_class("user-image");
+        $lpicture       ->set_class("img-circle");
+        $left           ->set_class("pull-left");
+        $right          ->set_class("pull-right");
+        $profile        ->set_class("btn", "btn-default", "btn-primary");
+        $logout         ->set_class("btn", "btn-default", "btn-primary");
 
-        $link       ->set_custom_attribute("data-toggle", "dropdown");    
+        $name           ->set_text($user_fullname);
+        $info           ->set_text($user_fullname);
+        $logout         ->set_text("Logout");
+        $profile        ->set_text("Profile");
 
-        $spicture   ->set_src(ssSession::$user->get_picture());
-        $lpicture   ->set_src(ssSession::$user->get_picture());
+        $user_toggle    ->set_custom_attribute("data-toggle", "dropdown");
 
-        $link       ->add( $spicture, $name );
-        $left       ->add( $profile );
-        $right      ->add( $logout );
-        $header     ->add( $lpicture, $info );
-        $footer     ->add( $left, $right );
-        $dropdown   ->add( $header, $footer );
-        $user       ->add( $link, $dropdown );
+        $logout         ->set_href("/login/logout");
+        $profile        ->set_href("/user/view_user/" . ssSession::$user->get_id());
 
-        return $user;
+        $spicture       ->set_src(ssSession::$user->get_picture());
+        $lpicture       ->set_src(ssSession::$user->get_picture());
+
+        $user_toggle    ->add( $spicture, $name );
+        $left           ->add( $profile );
+        $right          ->add( $logout );
+        $header         ->add( $lpicture, $info );
+        $footer         ->add( $left, $right );
+        $user_dropdown  ->add( $header, $footer );
+        $user_item      ->add( $user_toggle, $user_dropdown );
+        $top_links      ->add( $user_item );
+
+        return $top_links;
     }
 
     private function get_menu_container()
     {
-    	$sidebar   = new div(); 
-        $menu      = $this->build_menu(0);
+        $sidebar      = new div(); 
+        $sidebar_nav  = new div(); 
 
-        $menu      ->set_class("nav", "nav-stacked");
-        $sidebar   ->set_class("col-sm-3", "col-md-2", "sidebar");
+        $menu         = $this->build_menu(0);
+
+        $menu         ->set_class("nav");
+        $sidebar      ->set_class("navbar-default", "sidebar");
+        $sidebar_nav  ->set_class("sidebar-nav", "navbar-collapse");
+
+        $menu         ->set_id("side-menu");
+
+        $sidebar      ->set_custom_attribute("role", "navigation");
         
-        $sidebar   ->add($menu);
+        $sidebar_nav  ->add( $menu );
+        $sidebar      ->add( $sidebar_nav );
         
-    	return $sidebar;
-	}
+        return $sidebar;
+    }
 
     private function build_menu( $_parent_menu_id )
     {
@@ -170,24 +227,34 @@ class dashboard extends page
         {
             $item      = new li(); 
             $link      = new a();
+            $icon      = new i();
+            $arrow     = new span();
             $sub_menu  = $this->build_menu( $menu_item["menu_item_id"] );
+            $icon_type = trim($menu_item["menu_icon"]);
 
-            $link->set_text($menu_item["menu_item_label"]);
-            $link->set_href($menu_item["menu_item_link"]);
+            $arrow      ->set_class("fa arrow"); 
+            $link       ->set_text( $menu_item["menu_item_label"] );
+            $link       ->set_href( $menu_item["menu_item_link" ] );
 
             $item->add( $link );
 
+            if ( $icon_type != "")
+            {
+                $icon ->set_class("fa", $icon_type, "fa-fw");
+                $link->add( $icon );
+            } 
+
             if ( $sub_menu ) 
             {
+                $sub_menu->set_class("nav", "nav-second-level");
+
+                $link->add( $arrow );
                 $item->add( $sub_menu );
-                $item->set_class("panel");
             }
 
             $menu->add( $item );
         }
 
-        return $menu; 
+        return $menu;
     }
-    
-
 }

@@ -2,10 +2,9 @@
 
 class ssAddress extends ssDataAccess
 {
-	protected $owning_id;
-	protected $owning_table;
-	protected $line1;
-	protected $line2;
+	protected $id;
+	protected $number;
+	protected $street;
 	protected $country;
 	protected $state;
 	protected $city;
@@ -22,44 +21,34 @@ class ssAddress extends ssDataAccess
     /*
     	Setter's and Getter's
 	*/
-    public function set_owning_id( $_owning_id )
+    private function set_id( $_id )
 	{
-	    $this->owning_id = $_owning_id;
+	    $this->id = $_id;
 	}
 
-	public function get_owning_id()
+	public function get_id()
 	{
-	    return $this->owning_id;    
+	    return $this->id;    
 	}
 
-    public function set_owning_table( $_owning_table )
+    public function set_number( $_number )
 	{
-	    $this->owning_table = $_owning_table;
+	 	$this->set_property( "number", $_number );   
 	}
 
-	public function get_owning_table()
+	public function get_number()
 	{
-	    return $this->owning_table;    
+	    return $this->number;    
 	}
 
-    public function set_line1( $_line1 )
+    public function set_street( $_street )
 	{
-	 	$this->set_property( "line1", $_line1 );   
+	 	$this->set_property( "street", $_street );   
 	}
 
-	public function get_line1()
+	public function get_street()
 	{
-	    return $this->line1;    
-	}
-
-    public function set_line2( $_line2 )
-	{
-	 	$this->set_property( "line2", $_line2 );   
-	}
-
-	public function get_line2()
-	{
-	    return $this->line2;    
+	    return $this->street;    
 	}
 
     public function set_country( $_country )
@@ -105,16 +94,12 @@ class ssAddress extends ssDataAccess
     /*
     	Public Methods
 	*/
-	public function focus( $_owning_table, $_owning_id )
+	public function focus( $_address_id )
 	{
         QUERY::QTABLE("ssm_address");
 
         QUERY::QWHERE(
-        	QUERY::condition("owning_table", "=", QUERY::quote($_owning_table))
-        );
-
-        QUERY::QAND(
-        	QUERY::condition("owning_id", "=", $_owning_id)
+        	QUERY::condition("address_id", "=", QUERY::quote($_address_id))
         );
 
         $this->set_properties(DB::single(QUERY::QSELECT()));
@@ -125,10 +110,8 @@ class ssAddress extends ssDataAccess
         QUERY::QTABLE("ssm_address");
 
         QUERY::QCOLUMNS(
-        	"owning_id", 
-        	"owning_table", 
-        	"address_line1", 
-        	"address_line2", 
+        	"address_number", 
+        	"address_street", 
         	"address_country", 
         	"address_state", 
         	"address_city", 
@@ -136,10 +119,8 @@ class ssAddress extends ssDataAccess
         );
 
         QUERY::QVALUES (
-			QUERY::quote($this->get_owning_id()),
-			QUERY::quote($this->get_owning_table()),
-			QUERY::quote($this->get_line1()),
-			QUERY::quote($this->get_line2()),
+			QUERY::quote($this->get_number()),
+			QUERY::quote($this->get_street()),
 			QUERY::quote($this->get_country()),
 			QUERY::quote($this->get_state()),
 			QUERY::quote($this->get_city()),
@@ -151,12 +132,18 @@ class ssAddress extends ssDataAccess
 		switch ( $this->datastate ) 
 		{
 		    case self::DATASTATE_NEW:
-		   		DB::query( QUERY::QINSERT());
+				DB::query( 
+					QUERY::QINSERT()
+				);
+
+				$this->set_id(DB::inserted_id());
+
 	        break;
 		    case self::DATASTATE_MODIFIED:
-        		QUERY::QWHERE(QUERY::condition("owning_id",    "=", 			 $this->get_owning_id()));
-		        QUERY::QAND  (QUERY::condition("owning_table", "=", QUERY::quote($this->get_owning_table())));
-		           DB::query (QUERY::QUPDATE());
+        		QUERY::QWHERE(QUERY::condition("address_id", "=", $this->get_id()));
+		        DB::query(
+		        	QUERY::QUPDATE()
+		        );
 	        break;
 		}
 	}
@@ -164,27 +151,25 @@ class ssAddress extends ssDataAccess
     /*
     	Private Methods
 	*/
-	private function set_properties( $_organisation_data )
+	private function set_properties( $_address_data )
 	{
 		/*TODO: error handling */
-		$this->owning_id 	= $_organisation_data["owning_id"];
-		$this->owning_table = $_organisation_data["owning_table"];
-		$this->line1   	 	= $_organisation_data["address_line1"];    
-		$this->line2   	 	= $_organisation_data["address_line2"];    
-		$this->country 	 	= $_organisation_data["address_country"];  
-		$this->state   	 	= $_organisation_data["address_state"];    
-		$this->city    	 	= $_organisation_data["address_city"];     
-		$this->zip       	= $_organisation_data["address_zip"];      
+		$this->id 			= $_address_data["address_id"];
+		$this->number   	= $_address_data["address_number"];    
+		$this->street   	= $_address_data["address_street"];    
+		$this->country 	 	= $_address_data["address_country"];  
+		$this->state   	 	= $_address_data["address_state"];    
+		$this->city    	 	= $_address_data["address_city"];     
+		$this->zip       	= $_address_data["address_zip"];      
 
 		$this->datastate = self::DATASTATE_CURRENT;
 	}
 
 	private function reset_properties()
 	{
-		$this->owning_id 	= 0;
-		$this->owning_table	= 0;
-		$this->line1  		= "";
-		$this->line2  		= "";
+		$this->id 			= 0;
+		$this->number  		= "";
+		$this->street  		= "";
 		$this->country 		= "";
 		$this->state  		= "";
 		$this->city   		= "";

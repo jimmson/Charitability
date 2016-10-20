@@ -2,8 +2,8 @@
 
 use bones\containers\div;
 use bones\controls\h;
-
 use bootstrap\controls\binput;
+use bootstrap\controls\bp;
 
 class ssUtility {
 
@@ -23,7 +23,7 @@ class ssUtility {
         return DB::select(QUERY::QSELECT());
     }
 
-    public static function get_reference( $_prefix, $_leading_character = "0", $_length = 12 )
+    public static function get_reference( $_prefix = "", $_leading_character = "0", $_length = 12 )
     {
         $reference  =      date("y"); 
         $reference .=      date("n");
@@ -42,63 +42,53 @@ class ssUtility {
         return $_prefix . $reference;
     }
 
-    public static function get_address_container()
+    public static function get_address_container( $_container, $_view_only = false )
     {
-        $container  = new div();
-        $title      = new h("", h::IMPORTANCE_2);
-        $line1      = new binput("line1");
-        $line2      = new binput("line2");
-        $country    = new binput("country");
-        $state      = new binput("state");
-        $city       = new binput("city");
-        $zip        = new binput("zip");
+        $control_class  = ( $_view_only ? "form-control-static" : "form-control");
+        $number         = ( $_view_only ? new bp("number")  : new binput("number") );
+        $street         = ( $_view_only ? new bp("street")  : new binput("street") );
+        $country        = ( $_view_only ? new bp("country") : new binput("country"));
+        $state          = ( $_view_only ? new bp("state")   : new binput("state")  );
+        $city           = ( $_view_only ? new bp("city")    : new binput("city")   );
+        $zip            = ( $_view_only ? new bp("zip")     : new binput("zip")    );
 
-        $line1      ->set_class("form-control");
-        $line2      ->set_class("form-control");
-        $country    ->set_class("form-control");
-        $state      ->set_class("form-control");
-        $city       ->set_class("form-control");
-        $zip        ->set_class("form-control");
-        $title      ->set_class("page-header");
-        $container  ->set_class("col-md-6", "form-horizontal");
+        $number     ->set_class($control_class);
+        $street     ->set_class($control_class);
+        $country    ->set_class($control_class);
+        $state      ->set_class($control_class);
+        $city       ->set_class($control_class);
+        $zip        ->set_class($control_class);
 
-        $line1      ->set_label("Line 1:");
-        $line2      ->set_label("Line 2:");
+        $number     ->set_label("Number:");
+        $street     ->set_label("Street:");
         $country    ->set_label("Country:");
         $state      ->set_label("State:");
         $city       ->set_label("City:");
         $zip        ->set_label("ZIP:");
 
-        $title      ->set_text("Address");
+        $_container  ->add( $number, $street, $country, $state, $city, $zip);
 
-        $container  ->add( $title, $line1, $line2, $country, $state, $city, $zip);
-
-        return $container;
+        return $_container;
     }
 
-    public static function get_contact_container()
+    public static function get_contact_container(  $_container, $_view_only = false )
     {
-        $container  = new div();
-        $title      = new h("", h::IMPORTANCE_2);
-        $telephone  = new binput("phone");
-        $fax        = new binput("fax");
-        $email      = new binput("email");
+        $control_class  = ( $_view_only ? "form-control-static" : "form-control");
+        $telephone      = ( $_view_only ? new bp("phone")   : new binput("phone"));
+        $fax            = ( $_view_only ? new bp("fax")     : new binput("fax")  );
+        $email          = ( $_view_only ? new bp("email")   : new binput("email"));
 
-        $telephone  ->set_class("form-control");
-        $fax        ->set_class("form-control");
-        $email      ->set_class("form-control");
-        $title      ->set_class("page-header");
-        $container  ->set_class("col-md-6", "form-horizontal");
+        $telephone  ->set_class($control_class);
+        $fax        ->set_class($control_class);
+        $email      ->set_class($control_class);
 
         $telephone  ->set_label("Telephone:");
         $fax        ->set_label("Fax:");
         $email      ->set_label("Email:");
 
-        $title      ->set_text("Contact Details");
+        $_container ->add( $telephone, $fax, $email );
 
-        $container  ->add( $title, $telephone, $fax, $email );
-
-        return $container;
+        return  $_container;
     }
 
     public static function upload_file()
@@ -122,4 +112,28 @@ class ssUtility {
         return $file_path;
     }
 
+    public static function upload_files()
+    {
+        $file_path = "";
+        $extension = "";
+        $num_files = count($_FILES["files"]["name"]);
+        $directory = "/public/uploads/";
+        $images    = array();
+
+        for( $i = 0; $i < $num_files; ++$i )
+        {
+            $extension = "." . pathinfo( $_FILES["files"]["name"][$i], PATHINFO_EXTENSION );
+            $temp_path = $_FILES['files']['tmp_name'][$i];
+            $file_name = self::get_reference("IMG" . $i);
+            $file_path = $directory . $file_name . $extension;
+            move_uploaded_file( $temp_path, $file_path ); 
+
+            $image = new ssImage();
+            $image ->set_location($file_path);
+            $image ->save();
+            $images[] = $image;
+        }   
+
+        return $images;
+    }
 }

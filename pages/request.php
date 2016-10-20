@@ -1,22 +1,25 @@
 <?php
 
- use bones\base\page;
- use bones\containers\div;
- use bones\containers\form;
- use bones\containers\select;
- use bones\containers\a;
- use bones\containers\table;
- use bones\controls\input;
- use bones\controls\button;
- use bones\controls\h;
- use bones\controls\img;
- use bones\controls\option;
- use bones\controls\span;
+use bones\base\page;
+use bones\containers\div;
+use bones\containers\form;
+use bones\containers\select;
+use bones\containers\a;
+use bones\containers\table;
+use bones\controls\input;
+use bones\containers\button;
+use bones\controls\h;
+use bones\controls\img;
+use bones\controls\option;
+use bones\controls\span;
 
- use bootstrap\controls\binput;
- use bootstrap\controls\btextarea;
- use bootstrap\controls\bspan;
- use bootstrap\containers\bselect;
+use bootstrap\controls\binput;
+use bootstrap\controls\btextarea;
+use bootstrap\controls\bspan;
+use bootstrap\controls\bp;
+use bootstrap\containers\bselect;
+use bootstrap\containers\bpanel;
+use bootstrap\layouts\grid;
 
 class request extends dashboard
 {
@@ -44,25 +47,54 @@ class request extends dashboard
     {
         parent::define();
 
-        $this->request          = new ssRequest();
+        $this->request      = new ssRequest();
+        $this->layout       = new grid();
+        $this->heading      = new h("");
+        $this->actions      = new div();
+        $heading_wrapper    = new div();
+        $column_heading     = new div();
+        $column_action      = new div();
 
+        $this->layout       ->add_row( grid::FULL_WIDTH );
+        $this               ->set_layout( $this->layout ); 
+
+        $heading_wrapper    ->set_class("row", "page-header");
+        $column_heading     ->set_class("col-md-6");
+        $column_action      ->set_class("col-md-6", "align-right", "lh-6");
+
+        $column_action      ->add( $this->actions ); 
+        $column_heading     ->add( $this->heading ); 
+        $heading_wrapper    ->add( $column_heading, $column_action ); 
+        $this               ->add( $heading_wrapper ); 
+    }
+
+    public function define_maintenance()
+    {
+        $this->layout->add_row(grid::FULL_WIDTH);
+        
         $this->info             = new div();
-        $this->title            = new div();
         $this->form             = new form("", form::POST);
-        $this->heading          = new h("");
+        $panel                  = new bpanel("Details");
         $this->submit           = new button("submit_button");
-        $this->add_response     = new a("response_button");
+        $form_layout            = new grid();
         $this->types            = new bselect("type");
         $this->quantity         = new binput("quantity");
-        $this->reference        = new bspan("reference");
+        $this->reference        = new bp("reference");
+        $this->status           = new bp("status");
         $this->description      = new btextarea("description");
-        $this->status           = new bspan("status");
         $this->quantity_type    = new bselect("quantity_type");
         $types                  = new option();
         $quantity_types         = new option();
         $quantity_types_default = new option();
         $types_default          = new option();
         $this->entity_details   = new bentity_details();
+        $form_left              = new div();
+        $form_right             = new div();
+
+
+        $form_layout            ->add_row(grid::HALF_WIDTH, grid::HALF_WIDTH);
+        $form_layout            ->add_row(grid::FULL_WIDTH);
+        $this->info             ->set_layout( $form_layout ); 
 
         $types_default          ->set_value("0");
         $types_default          ->set_text("Select a Request type");
@@ -86,74 +118,107 @@ class request extends dashboard
         $this->entity_details   ->set_label("Organisation:");
         $this->description      ->set_label("Description:");
 
-        $this->info             ->set_class("col-md-8", "form-horizontal");
-        $this->title            ->set_class("page-header");
+        $this->info             ->set_class("col-md-12", "form-horizontal");
         $this->types            ->set_class("form-control"); 
         $this->quantity         ->set_class("form-control");
         $this->quantity_type    ->set_class("form-control");
-        $this->status           ->set_class("form-control");
-        $this->reference        ->set_class("form-control");
         $this->description      ->set_class("form-control");
-        $this->add_response     ->set_class("btn", "btn-lg", "btn-primary");
-        $this->submit           ->set_class("btn", "btn-lg", "btn-primary");
+        $this->submit           ->set_class("btn", "btn-primary");
 
         $this->submit           ->set_text("Submit");
-        $this->add_response     ->set_text("Add Response");
 
         $this->types            ->add( $types );
         $this->quantity_type    ->add( $quantity_types );
-        $this->title            ->add( $this->heading, $this->add_response, $this->submit );
-        $this->info             ->add( $this->entity_details, $this->reference,  $this->status, $this->types, 
-                                       $this->quantity_type, $this->quantity,  $this->description );
-        $this->form             ->add( $this->title, $this->info);
+        $form_left              ->add( $this->entity_details, $this->reference,  $this->status);
+        $form_right             ->add( $this->types, $this->quantity_type, $this->quantity);
+        $this->info             ->add( $form_left, $form_right, $this->description );
+        $panel                  ->add( $this->info );
+        $panel->footer          ->add( $this->submit );
+        $this->form             ->add( $panel );
         $this                   ->add( $this->form );
+    }
+
+    public function define_view()
+    {
+        $this->layout->add_row(grid::FULL_WIDTH);
+        
+        $this->info             = new div();
+        $this->form             = new form("", form::POST);
+        $panel                  = new bpanel("Details");
+        $form_layout            = new grid();
+        $this->add_response     = new a("add_response");
+        $this->types            = new bp("type");
+        $this->quantity         = new bp("quantity");
+        $this->reference        = new bp("reference");
+        $this->status           = new bp("status");
+        $this->description      = new bp("description");
+        $this->quantity_type    = new bp("quantity_type");
+        $this->entity_details   = new bentity_details();
+        $form_left              = new div();
+        $form_right             = new div();
+
+        $form_layout            ->add_row(grid::HALF_WIDTH, grid::HALF_WIDTH);
+        $form_layout            ->add_row(grid::FULL_WIDTH);
+        $this->info             ->set_layout( $form_layout ); 
+
+        $this->types            ->set_label("Type:");
+        $this->quantity         ->set_label("Quantity:");
+        $this->quantity_type    ->set_label("Quantity Type:");
+        $this->status           ->set_label("Status:");
+        $this->reference        ->set_label("Reference:");
+        $this->entity_details   ->set_label("Organisation:");
+        $this->description      ->set_label("Description:");
+
+        $this->info             ->set_class("col-md-12", "form-horizontal");
+        $this->add_response     ->set_class("btn", "btn-primary");
+
+        $this->add_response     ->set_text("Add Response");
+
+        $form_left        ->add( $this->entity_details, $this->reference,  $this->status);
+        $form_right       ->add( $this->types, $this->quantity_type, $this->quantity);
+        $this->info       ->add( $form_left, $form_right, $this->description );
+        $panel            ->add( $this->info );
+        $panel->footer    ->add( $this->add_response );
+        $this->form       ->add( $panel );
+        $this             ->add( $this->form );
     }
 
     public function add_request()
     {
+        $this                   ->define_maintenance();
         $this->heading          ->set_text("Add request");
         $this->reference        ->set_text("Auto generated code");
         $this->status           ->set_text("New");
-        $this->entity_details   ->set_src(ssSession::$organisation->get_logo());  
+        $this->entity_details   ->set_src(ssSession::$organisation->logo->get_location());  
         $this->entity_details   ->set_text(ssSession::$organisation->get_name());  
         $this->form             ->set_action("/request/save_request"); 
     }
 
     public function change_request( $_args = null )
     {
-        $data = $this->get_request_data( $_args[0] );
-
+        $this->request  ->focus( $_args[0] );
         $this->form     ->set_action("/request/update_request/" . $this->request->get_id());
         $this->heading  ->set_text("Update request");
     }
 
     public function view_request( $_args = null )
     {
-        $data = $this   ->get_request_data( $_args[0] );
+        $this->request          ->focus( $_args[0] );
+        $this                   ->define_view();
+        $this->info             ->set_control_properties("set_readonly", true);
+        $this->form             ->set_action("/request/change_request/" . $this->request->get_id());
+        $this->add_response     ->set_href("/response/add_response/" . $this->request->get_id());
+        $this->heading          ->set_text("View request");
+        $this->description      ->set_text($this->request->get_description());
+        $this->types            ->set_text($this->request->type->get_label());
+        $this->quantity_type    ->set_text($this->request->quantity_type->get_label());
+        $this->status           ->set_text($this->request->status->get_label());
+        $this->reference        ->set_text($this->request->get_reference());
+        $this->quantity         ->set_text($this->request->get_quantity());
+        $this->entity_details   ->set_text($this->request->organisation->get_name());  
+        $this->entity_details   ->set_src($this->request->organisation->logo->get_location());  
 
-        $this->info     ->set_control_properties("set_readonly", true);
-
-        $this->form           ->set_action("/request/change_request/" . $this->request->get_id());
-        $this->add_response   ->set_href("/response/add_response/" . $this->request->get_id());
-        $this->heading        ->set_text("View request");
-        $this->submit         ->set_text("Change");
-        $this->entity_details ->set_src($this->request->organisation->get_logo());  
-        $this->entity_details ->set_text($this->request->organisation->get_name());  
-
-        $this->form->add($this->get_responses());
-
-    }
-
-    private function get_request_data( $_request_id )
-    {
-        $this->request->focus( $_request_id );
-
-        $this->description      ->set_text ($this->request->get_description());
-        $this->types            ->set_value($this->request->type->get_code());
-        $this->quantity_type    ->set_value($this->request->quantity_type->get_code());
-        $this->status           ->set_text ($this->request->status->get_label());
-        $this->reference        ->set_text ($this->request->get_reference());
-        $this->quantity         ->set_value($this->request->get_quantity());
+        $this->form             ->add($this->get_responses());
     }
 
     public function update_request($_args = null)
@@ -169,25 +234,22 @@ class request extends dashboard
         $this->request->set_quantity            ( $_POST["quantity"] );
         $this->request->set_organisation_id     ( ssSession::$organisation->get_id() );
         $this->request->quantity_type->set_code ( $_POST["quantity_type"] );
-
         $this->request->save();
     }
 
     private function get_responses()
     {
+        $panel            = new bpanel("Responses");
         $results          = new div();
-        $heading          = new h("", h::IMPORTANCE_2);
         $results_table    = new table();
         $table_img        = new img();
         $table_link       = new sa();
         $table_link       = new sa();
         $table_res_qty    = new span();
 
-        $heading          ->set_text("Responses");
-
         $results_table    ->set_data( $this->get_response_data() ); 
 
-        $table_img        ->set_data_items("organisation_logo_path");
+        $table_img        ->set_data_items("file_location");
         $table_img        ->set_data_properties("set_src");
 
         $table_res_qty    ->set_data_items("response_quantity");
@@ -207,9 +269,10 @@ class request extends dashboard
         $table_link       ->set_label("Response");
 
         $results_table    ->add( $table_img, $table_link, $table_res_qty );
-        $results          ->add( $heading, $results_table );
+        $results          ->add( $results_table );
+        $panel            ->add( $results );
 
-        return $results;
+        return $panel;
     }
 
      private function get_response_data( )
@@ -220,11 +283,12 @@ class request extends dashboard
             "response_id", 
             "response_reference", 
             "response_quantity",
-            "organisation_logo_path", 
-            "organisation_name"
+            "organisation_name",
+            "file_location"
         );
 
-        QUERY::QJOIN("ssm_organisation", QUERY::condition("sst_response.organisation_id", "=", "ssm_organisation.organisation_id"));
+        QUERY::QJOIN("ssm_organisation", QUERY::condition("sst_response.organisation_id",  "=", "ssm_organisation.organisation_id"));
+        QUERY::QJOIN("ssm_file",         QUERY::condition("ssm_organisation.logo_file_id", "=", "ssm_file.file_id"));
 
         QUERY::QWHERE(QUERY::condition("request_id", "=", $this->request->get_id())); 
 

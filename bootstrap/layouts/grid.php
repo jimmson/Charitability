@@ -1,5 +1,5 @@
 <?php
-namespace bones\layouts;
+namespace bootstrap\layouts;
 
 use bones\base\layout;
 use bones\containers\div;
@@ -41,6 +41,7 @@ class grid extends layout
 		foreach ($this->rows as $row) 
 		{ 
 			$row_container = new div("row");
+			$row_container->set_class("row");
 
 			foreach ($row as $collumn) 
 			{ 

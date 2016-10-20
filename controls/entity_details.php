@@ -36,8 +36,8 @@
     {
         $this->set_renderer(self::DEFAULT_RENDERER);
 
-        $this->span->render();
         $this->img->render();
+        $this->span->render();
     }
  }
 

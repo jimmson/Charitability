@@ -1,26 +1,21 @@
 <?php
 
- use bones\base\page;
- use bones\containers\div;
- use bones\containers\form;
- use bones\containers\select;
- use bones\controls\input;
- use bones\controls\button;
- use bones\controls\h;
- use bones\controls\option;
+use bones\base\page;
+use bones\containers\div;
+use bones\containers\form;
+use bones\containers\select;
+use bones\controls\input;
+use bones\containers\button;
+use bones\controls\h;
+use bones\controls\option;
+
+use bootstrap\controls\binput;
+use bootstrap\containers\bselect;
+use bootstrap\containers\bpanel;
+use bootstrap\layouts\grid;
 
 class login extends page
 {
-	//containers
-	private $form;
-
-	//controls
-    private $email;
-	private $organisation;
-	private $password;
-	private $submit;
-	private $headding;
-
 	public function __construct()
 	{
 		parent::__construct( "Welcome" );
@@ -30,41 +25,53 @@ class login extends page
     {     
         $this->requires_session = false;
 
-        $this->add_stylesheet( "http://getbootstrap.com/dist/css/bootstrap.min.css" );
-        $this->add_stylesheet( "https://getbootstrap.com/examples/signin/signin.css" );
+        $this->add_stylesheet( "/public/bootstrap/dist/css/bootstrap.min.css" );
+        $this->add_stylesheet( "/public/metisMenu/dist/metisMenu.min.css" );
+        $this->add_stylesheet( "/public/css/sb-admin-2.css" );
+        $this->add_stylesheet( "/public/font-awesome/css/font-awesome.min.css" );
+
         $this->add_meta( "viewport", "width=device-width, initial-scale=1" );
 
-    	$this->headding     = new h("");
-    	$this->submit 	    = new button("submit_button");
-    	$this->form 	    = new form("", form::POST, "/login/login");
-        $this->organisation = $this->get_select();
-    	$this->email 	    = new input("email");
-    	$this->password     = new input("password", input::PASSWORD);
-
-    	$this->form->add( $this->headding, $this->organisation, $this->email, $this->password, $this->submit );
+        $this->add_script( "/public/jquery/dist/jquery.min.js" );
+        $this->add_script( "/public/bootstrap/dist/js/bootstrap.min.js" );
+        $this->add_script( "/public/metisMenu/dist/metisMenu.min.js" );
+        $this->add_script( "/public/js/sb-admin-2.js" );
     }
 
     public function view()
     {
-        $this->submit       ->set_class("btn", "btn-lg", "btn-primary", "btn-block");
-        $this->form         ->set_class("form-signin");
-        $this->organisation ->set_class("form-control");
-        $this->email        ->set_class("form-control");
-        $this->password     ->set_class("form-control");
+        $layout             = new grid();
+        $login_panel        = new bpanel("Please Sign In");
+        $wrapper            = new div();    
+        $submit             = new button("submit_button");
+        $form               = new form("", form::POST, "/login/login");
+        $email              = new binput("email");
+        $password           = new binput("password", input::PASSWORD);
+        $organisation       = $this->get_select();
 
-    //    $this->organisation ->set_placeholder("Organisation");
-        $this->email        ->set_placeholder("Email Address");
-        $this->password     ->set_placeholder("Password");
+        $this               ->set_layout($layout);   
+        $layout             ->add_row(grid::FULL_WIDTH);
 
-        $this->headding ->set_text("Please sign in");
-        $this->submit   ->set_text("Sign in");
-        
-        $this->add ($this->form );
+        $submit             ->set_class("btn", "btn-lg", "btn-primary", "btn-block");
+        $form               ->set_class("form-signin");
+        $organisation       ->set_class("form-control");
+        $email              ->set_class("form-control");
+        $password           ->set_class("form-control");
+        $email              ->set_placeholder("Email Address");
+        $password           ->set_placeholder("Password");
+        $submit             ->set_text("Sign in");
+        $wrapper            ->set_class("col-md-4", "col-md-offset-4");
+        $login_panel        ->set_class("login-panel");
+
+        $form               ->add($organisation, $email, $password, $submit);
+        $wrapper            ->add($login_panel);   
+        $login_panel        ->add($form);
+        $this               ->add($wrapper);
     }
 
     public function get_select()
     {
-        $select = new select("organisation");
+        $select = new bselect("organisation");
         $self   = new option();
         $option = new option();
         $data   = ssOrganisation::get_organisation_data();
@@ -89,7 +96,6 @@ class login extends page
 
         if (!$user_id) 
         {
-            /* TODO: return with error */
            ssApp::handle_redirect( ssApp::LOGIN_PAGE);
         }
 

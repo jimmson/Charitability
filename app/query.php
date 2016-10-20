@@ -73,6 +73,15 @@ class QUERY {
 		return $query;
 	}
 
+	public static function QDELETE()
+	{
+		$query  = "DELETE FROM";
+		$query .= self::space( self::$table );
+		foreach ( self::$where as $where ) $query .= $where;
+
+		return $query;
+	}
+
 	public static function QUPDATE()
 	{
 		$num_fields = max( count(self::$columns), count(self::$values) ) - 1 ;

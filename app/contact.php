@@ -2,8 +2,7 @@
 
 class ssContact extends ssDataAccess
 {
-	protected $owning_id;
-	protected $owning_table;
+	protected $id;
 	protected $phone;
 	protected $fax;
 	protected $email;
@@ -19,24 +18,14 @@ class ssContact extends ssDataAccess
     /*
     	Setter's and Getter's
 	*/
-    public function set_owning_id( $_owning_id )
+    private function set_id( $_id )
 	{
-	    $this->owning_id = $_owning_id;
+	    $this->id = $_id;
 	}
 
-	public function get_owning_id()
+	public function get_id()
 	{
-	    return $this->owning_id;    
-	}
-
-    public function set_owning_table( $_owning_table )
-	{
-	    $this->owning_table = $_owning_table;
-	}
-
-	public function get_owning_table()
-	{
-	    return $this->owning_table;    
+	    return $this->id;    
 	}
 
     public function set_phone( $_phone )
@@ -72,16 +61,12 @@ class ssContact extends ssDataAccess
     /*
     	Public Methods
 	*/
-	public function focus( $_owning_table, $_owning_id )
+	public function focus( $_contact_id )
 	{
         QUERY::QTABLE("ssm_contact");
 
         QUERY::QWHERE(
-        	QUERY::condition("owning_table", "=", QUERY::quote($_owning_table))
-        );
-
-        QUERY::QAND(
-        	QUERY::condition("owning_id", "=", $_owning_id)
+        	QUERY::condition("contact_id", "=", QUERY::quote($_contact_id))
         );
 
         $this->set_properties(DB::single(QUERY::QSELECT()));
@@ -92,16 +77,12 @@ class ssContact extends ssDataAccess
         QUERY::QTABLE("ssm_contact");
 
         QUERY::QCOLUMNS(
-        	"owning_id", 
-        	"owning_table", 
         	"contact_phone", 
         	"contact_fax", 
         	"contact_email" 
         );
 
         QUERY::QVALUES (
-			QUERY::quote($this->get_owning_id()),
-			QUERY::quote($this->get_owning_table()),
 			QUERY::quote($this->get_phone()),
 			QUERY::quote($this->get_fax()),
 			QUERY::quote($this->get_email())
@@ -112,12 +93,17 @@ class ssContact extends ssDataAccess
 		switch ( $this->datastate ) 
 		{
 		    case self::DATASTATE_NEW:
-		        DB::query( QUERY::QINSERT());
+				DB::query(
+					QUERY::QINSERT()
+				);
+								
+				$this->set_id(DB::inserted_id());
 	        break;
 		    case self::DATASTATE_MODIFIED:
-        		QUERY::QWHERE(QUERY::condition("owning_id",    "=", 		     $this->get_owning_id()));
-		        QUERY::QAND  (QUERY::condition("owning_table", "=", QUERY::quote($this->get_owning_table())));
-		           DB::query (QUERY::QUPDATE());
+        		QUERY::QWHERE(QUERY::condition("contact_id", "=", $this->get_id()));
+		        DB::query(
+		        	QUERY::QUPDATE()
+		        );
 	        break;
 		}
 	}
@@ -125,22 +111,19 @@ class ssContact extends ssDataAccess
     /*
     	Private Methods
 	*/
-	private function set_properties( $_organisation_data )
+	private function set_properties( $_contact_data )
 	{
 		/*TODO: error handling */
-		$this->owning_id 	= $_organisation_data["owning_id"];
-		$this->owning_table = $_organisation_data["owning_table"];
-		$this->phone   	 	= $_organisation_data["contact_phone"];    
-		$this->fax   	 	= $_organisation_data["contact_fax"];    
-		$this->email 	 	= $_organisation_data["contact_email"];  
+		$this->id 			= $_contact_data["contact_id"];
+		$this->phone   	 	= $_contact_data["contact_phone"];    
+		$this->fax   	 	= $_contact_data["contact_fax"];    
+		$this->email 	 	= $_contact_data["contact_email"];  
 
 		$this->datastate = self::DATASTATE_CURRENT;
 	}
 
 	private function reset_properties()
 	{
-		$this->owning_id 	= 0;
-		$this->owning_table	= 0;
 		$this->phone  		= "";
 		$this->fax  		= "";
 		$this->email 		= "";
