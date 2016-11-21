@@ -4,9 +4,9 @@ its intention is to allow charties to request items and help sponsors identify t
 
 demo available at http://charitability.eculture.co.za/login/view
 
-Company: Demo
+Company drop down: Demo
 
-Username: Demo
+email: demo@eculture.co.za
 
 Password: Demo
 
