@@ -68,9 +68,11 @@ class ssMail {
     public function send()
     {
         $this->set_default_headers();
-/*
+        
+    /*
         $headers[] = "From: Sender Name <postmaster@localhost>";
-        $headers[] = "Reply-To: Recipient Name <postmaster@localhost>";*/
+        $headers[] = "Reply-To: Recipient Name <postmaster@localhost>";
+    */
 
 
         mail($this->to, $this->subject, $this->message, $this->get_headers());

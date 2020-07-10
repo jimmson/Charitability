@@ -9,14 +9,13 @@ use bones\containers\a;
 
 class panel extends layout
 {
-	public function render( $_container )
-	{
+    public function render($_container)
+    {
+        $_container->heading 	->render();
+        $_container->body 		->render();
 
-		$_container->heading 	->render();
-		$_container->body 		->render();
-
-		if ($_container->footer->has_controls())
-			$_container->footer->render();
-
-	}
+        if ($_container->footer->has_controls()) {
+            $_container->footer->render();
+        }
+    }
 }

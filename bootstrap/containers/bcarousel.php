@@ -6,22 +6,18 @@
 
  use bootstrap\layouts\carousel;
 
- 
  class bcarousel extends container
  {
+     public function __construct($_name = "")
+     {
+         parent::__construct($_name);
 
-    public function __construct( $_name = "" )
-    {
-        parent::__construct( $_name );
+         $layout = new carousel();
 
-        $layout = new carousel();
+         $this->set_layout($layout);
+         $this->set_element("div");
 
-        $this->set_layout($layout);
-        $this->set_element("div");
-
-        $this->set_class("carousel", "slide");
-        $this->set_custom_attribute("data-ride", "carousel");
-    }
+         $this->set_class("carousel", "slide");
+         $this->set_custom_attribute("data-ride", "carousel");
+     }
  }
-
-

@@ -8,21 +8,16 @@
 
  use bootstrap\layouts\tab;
 
- 
  class btabs extends container
  {
+     public function __construct($_name = "")
+     {
+         parent::__construct($_name);
 
-    public function __construct( $_name = "" )
-    {
-        parent::__construct( $_name );
+         $layout = new tab();
 
-        $layout = new tab();
-
-        $this->set_layout($layout);
+         $this->set_layout($layout);
         
-        $this->set_element("div");
-
-    }
+         $this->set_element("div");
+     }
  }
-
-
